@@ -1,0 +1,119 @@
+git的撤销修改
+1.   在工作区中还未提交到暂存区时，更没有提交到分支上时，这是修改可以使用git  restore <file>来撤销修改
+即使用git  restore <file>可以来撤销工作区的修改
+当添加到暂存区时， git restore --staged readme.txt，文件的修改会回到工作区
+2.  git的删除文件
+先删除工作区的文件rm <文件名>
+这时工作区与版本库就不一致了，git status会立即告诉你
+这时有两个选择：一是使用git rm <文件名>来删除文件，并且git commit，一种情况是删错了，这时版本库中
+还存在之前的文件，这时使用git checkout --<文件名>即可一键还原
+
+3. 添加远程库 同时将本地库与远程库相连
+git remote add origin git@github.com:michaelliao/learngit.git
+
+4. 创建与合并分支
+
+Git鼓励大量使用分支：
+
+查看分支：git branch
+
+创建分支：git branch <name>
+
+切换分支：git checkout <name>或者git switch <name>
+
+创建+切换分支：git checkout -b <name>或者git switch -c <name>
+
+合并某分支到当前分支：git merge <name>
+
+删除分支：git branch -d <name>
+
+
+5. 解决冲突
+创建一个分支后，在分支上进行了提交，这时在回到主分支上时，进行提交后，需要将分支合并到主分支上时，大概率
+就会出现冲突
+这时就需要先进行修改，在使用git add ,git commit-m等命令进行提交
+
+
+6. 分支管理策略
+首先，master分支应该是非常稳定的，也就是仅用来发布新版本，平时不能在上面干活；
+
+那在哪干活呢？干活都在dev分支上，也就是说，dev分支是不稳定的，到某个时候，比如1.0版本发布时，再把dev分支合并到master上，在master分支发布1.0版本；
+
+你和你的小伙伴们每个人都在dev分支上干活，每个人都有自己的分支，时不时地往dev分支上合并就可以了。
+7 .bug分支
+
+git stash命令的作用就是将目前还不想提交的但是已经修改的内容进行保存至堆栈中
+后续可以在某个分支上恢复出堆栈中的内容。这也就是说，
+stash中的内容不仅仅可以恢复到原先开发的分支，也可以恢复到其他任意指定的分支上。
+git stash作用的范围包括工作区和暂存区中的内容，也就是说没有提交的内容都会保存至堆栈中
+工作区是干净的，刚才的工作现场存到哪去了？用git stash list命令看看：
+
+$ git stash list
+stash@{0}: WIP on dev: f52c633 add merge
+工作现场还在，Git把stash内容存在某个地方了，但是需要恢复一下，有两个办法：
+
+一是用git stash apply恢复，但是恢复后，stash内容并不删除，你需要用git stash drop来删除；
+
+另一种方式是用git stash pop，恢复的同时把stash内容也删了：
+
+
+8 feature分支
+开发一个新的feature，最好新建一个分支
+如果要丢弃一个没有被合并的分支，可以通过git branch -D<file>
+
+9.多人协作
+首先，可以试图用git push origin <branch-name>推送自己的修改；
+
+如果推送失败，则因为远程分支比你的本地更新，需要先用git pull试图合并；
+
+如果合并有冲突，则解决冲突，并在本地提交；
+
+没有冲突或者解决掉冲突后，再用git push origin <branch-name>推送就能成功！
+
+如果git pull提示no tracking information，则说明本地分支和远程分支的链接关系没有创建，用命令git branch --set-upstream-to <branch-name> origin/<branch-name>。
+
+这就是多人协作的工作模式，一旦熟悉了，就非常简单。
+
+查看远程库信息，使用git remote -v；
+
+本地新建的分支如果不推送到远程，对其他人就是不可见的；
+
+从本地推送分支，使用git push origin branch-name，如果推送失败，先用git pull抓取远程的新提交；
+
+在本地创建和远程分支对应的分支，使用git checkout -b branch-name origin/branch-name，本地和远程分支的名称最好一致；
+
+建立本地分支和远程分支的关联，使用git branch --set-upstream branch-name origin/branch-name；
+
+从远程抓取分支，使用git pull，如果有冲突，要先处理冲突。
+
+
+11.创建标签
+git tag v1.0默认标签是打在最新的commit上的
+如果忘记，使用git log方式找到历史提交的commit-id，然后使用git tag v0.9 f52c633
+git tag 用来查看标签
+git show <标签名>用来查看标签的信息
+
+也可以使用带说明的标签
+$ git tag -a v0.1 -m "version 0.1 released" 1094ad
+命令git tag <tagname>用于新建一个标签，默认为HEAD，也可以指定一个commit id；
+
+命令git tag -a <tagname> -m "blablabla..."可以指定标签信息；
+
+命令git tag可以查看所有标签。
+
+12.操作标签
+删除标签 git tag -d v0.1
+因为创建的标签只是存储在本地2，不会自动推送到远程。所以，打错的标签可以在本地安全的删除
+如果要推送某个标签到远程，使用命令git push origin <tagname>或者一次性推送全部的标签到远程
+git push origin --tags
+如果标签已经推送到远程，要删除远程标签就相对的麻烦一点
+先从本地删除： git tag -d v0.9
+再从远程删除：git push origin :refs/tags/v0.9
+
+命令git push origin <tagname>可以推送一个本地标签；
+
+命令git push origin --tags可以推送全部未推送过的本地标签；
+
+命令git tag -d <tagname>可以删除一个本地标签；
+
+命令git push origin :refs/tags/<tagname>可以删除一个远程标签。
